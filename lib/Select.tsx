@@ -77,7 +77,7 @@ export interface SelectProps {
     onBlur?: (e: React.FocusEvent<HTMLInputElement>) => void;
     onEnter?: () => void;
     tabIndex?: number;
-    iconRenderer?: React.ComponentClass<{ icon: IconOption }>;
+    iconRenderer?: React.ComponentType<{ icon: IconOption }>;
 }
 
 type Props = SelectProps;
@@ -959,3 +959,99 @@ export class Select extends React.Component<Props, State> {
         );
     }
 }
+
+/*
+interface IconProps {
+    icon: IconOption;
+}
+
+class NoProps extends React.Component<{testing: true}> {
+    public render(): React.ReactNode {
+        return undefined;
+    }
+}
+
+class AnyProps extends React.Component<any> {
+    public render(): React.ReactNode {
+        return undefined;
+    }
+}
+
+class CorrectProps extends React.Component<IconProps> {
+    public render(): React.ReactNode {
+        return undefined;
+    }
+}
+
+const FnNoProps: React.FunctionComponent<{testing: true}> = (props) => {
+    return null;
+};
+
+const FnAnyProps: React.FunctionComponent<any> = (props) => {
+    return null;
+};
+
+const FnCorrectProps: React.FunctionComponent<IconProps> = (props) => {
+    return null;
+};
+
+const rn = () => {
+    const onChange = () => {
+        // Do nothing
+    };
+
+    const a = (
+        <Select
+            value={null}
+            options={[]}
+            onChange={onChange}
+            iconRenderer={NoProps}
+        />
+    );
+
+    const b = (
+        <Select
+            value={null}
+            options={[]}
+            onChange={onChange}
+            iconRenderer={AnyProps}
+        />
+    );
+
+    const c = (
+        <Select
+            value={null}
+            options={[]}
+            onChange={onChange}
+            iconRenderer={CorrectProps}
+        />
+    );
+
+    const d = (
+        <Select
+            value={null}
+            options={[]}
+            onChange={onChange}
+            iconRenderer={FnNoProps}
+        />
+    );
+
+    const e = (
+        <Select
+            value={null}
+            options={[]}
+            onChange={onChange}
+            iconRenderer={FnAnyProps}
+        />
+    );
+
+    const f = (
+        <Select
+            value={null}
+            options={[]}
+            onChange={onChange}
+            iconRenderer={FnCorrectProps}
+        />
+    );
+};
+*/
