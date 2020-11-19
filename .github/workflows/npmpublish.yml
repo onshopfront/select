@@ -46,6 +46,6 @@ jobs:
             ${{ runner.os }}-yarn-
       - run: yarn --frozen-lockfile
       - run: yarn run build
-      - run: yarn publish ./dist --access public
+      - run: yarn publish --access public
         env:
           NODE_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
