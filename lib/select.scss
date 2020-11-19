@@ -1,0 +1,220 @@
+$dark-color: #313439;
+$dark-grey-color: #676B72;
+$light-grey-color: #BDBDBD;
+$light-color: #F8F8F8;
+
+$blue-color: #1C86F2;
+$red-color: #E3342F;
+
+$tiny-padding: 0.25rem;
+
+:root {
+    --select-menu-background: #{$light-color};
+    --select-option-background: #{$light-color};
+    --select-option-selected-background: #{lighten($blue-color, 30%)};
+    --select-option-selected-text-color: #{$dark-color};
+    --select-value-background: #{lighten($light-grey-color, 10%)};
+    --select-value-text-color: #{$dark-color};
+    --select-remove-value-color: #{$dark-color};
+    --select-remove-value-color-hover: #{$red-color};
+    --select-base-padding: #{$tiny-padding};
+    --select-option-highlighted-background: #{$light-color};
+    --select-option-highlighted-text-color: #{$blue-color};
+    --select-group-label-text-color: #{$dark-grey-color};
+    --select-awaiting-results-text-color: #{$dark-grey-color};
+}
+
+.select-icon {
+    display: inline-block;
+
+    &.caret {
+        font-size: 2em;
+        position: absolute;
+        top: -0.1em;
+    }
+
+    &.flip {
+        transform: rotateX(180deg);
+
+        &.caret {
+            top: calc(50% - 0.1em);
+        }
+    }
+}
+
+.select {
+    position: relative;
+    width: 100%;
+
+    .select-input {
+        position: relative;
+        display: flex;
+        height: 100%;
+        box-sizing: border-box;
+
+        .select-value-wrapper {
+            display: flex;
+            align-items: center;
+            position: absolute;
+            top: 0;
+            left: calc(1em + 2px);
+            bottom: 0;
+            cursor: text;
+            padding: 1em 0;
+            overflow: hidden;
+            height: 100%;
+            box-sizing: border-box;
+            text-align: left;
+
+            .select-multi-values {
+                .select-multi-value {
+                    display: inline-flex;
+                    font-size: 0.9em;
+                    padding: 0.25em 0.5em;
+                    background: var(--select-value-background, $light-grey-color);
+                    color: var(--select-value-text-color, $dark-color);
+                    margin-right: 0.25em;
+                    border-radius: 6px;
+                    cursor: pointer;
+                    max-width: 100px;
+                    box-sizing: border-box;
+
+                    &.is-more {
+                        cursor: initial;
+                    }
+
+                    .select-multi-value-label {
+                        display: inline-block;
+                        flex: 1 1 0;
+                        overflow: hidden;
+                        text-overflow: ellipsis;
+                        white-space: nowrap;
+                    }
+
+                    .select-icon {
+                        user-select: none;
+                        margin-left: 0.5em;
+                        color: var(--select-remove-value-color, $dark-color);
+                    }
+
+                    &:hover {
+                        .shopfront-icon {
+                            color: var(--select-remove-value-color-hover, $red-color);
+                        }
+                    }
+                }
+            }
+
+            .select-value {
+                pointer-events: none;
+                width: 100%;
+                white-space: pre;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+        }
+
+        .select-input-focusable {
+            width: 100%;
+            height: $tiny-padding * 13;
+            padding: ($tiny-padding * 4) 0;
+            border: solid thin;
+            box-sizing: border-box;
+        }
+
+        .select-input-indicators {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            height: 100%;
+            box-sizing: border-box;
+
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            right: 0;
+            padding-right: 0.5em;
+
+            & > * {
+                text-align: center;
+                line-height: 2em;
+                width: 2em;
+                height: 2em;
+            }
+
+            .select-input-clear {
+                cursor: pointer;
+                color: var(--select-remove-value-color, $dark-color);
+                transition: color 0.3s ease-in-out;
+
+                &:hover {
+                    color: var(--select-remove-value-color-hover, $red-color);
+                }
+            }
+        }
+    }
+
+    &.single-select {
+        .select-input {
+            .select-value-wrapper {
+                pointer-events: none;
+                width: calc(100% - #{$tiny-padding * 12});
+            }
+        }
+    }
+}
+
+.select-menu-wrapper {
+    .select-menu {
+        overflow: auto;
+        max-height: 350px;
+        width: 100%;
+        z-index: 1;
+        background: var(--select-menu-background, $light-color);
+        border: solid thin;
+
+        .select-option-empty {
+            height: 35px;
+            width: 100%;
+        }
+
+        .last-selected {
+            border-bottom: thin solid $dark-color;
+        }
+
+        .select-option {
+            background-color: var(--select-option-background, $light-color);
+            cursor: pointer;
+            width: 100%;
+            padding: 0.5em 1em;
+            box-sizing: border-box;
+
+            &.selected {
+                color: var(--select-option-selected-text-color, $dark-color);
+                background: var(--select-option-selected-background, lighten($blue-color, 30%));
+            }
+
+            &.highlighted {
+                color: var(--select-option-highlighted-text-color, $light-color);
+                background: var(--select-option-highlighted-background, $blue-color);
+            }
+        }
+
+        .select-group {
+            width: 100%;
+
+            .select-group-label {
+                color: var(--select-group-label-text-color, $dark-grey-color);
+                width: 100%;
+                padding: 0.5em;
+                box-sizing: border-box;
+                font-variant: all-small-caps;
+            }
+        }
+
+        .select-no-results, .select-loading-results {
+            padding: 0.5em;
+            color: var(--select-awaiting-results-text-color, $dark-grey-color);
+        }
+    }
+}
