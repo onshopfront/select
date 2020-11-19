@@ -1,0 +1,42 @@
+{
+    "name": "@onshopfront/select",
+    "version": "1.0.0",
+    "description": "An opinionated select component for React",
+    "repository": "git@github.com:onshopfront/select.git",
+    "author": "Shopfront <api@shopfront.com.au>",
+    "license": "MIT",
+    "main": "dist/index.js",
+    "module": "dist/index.esm.js",
+    "devDependencies": {
+        "@rollup/plugin-commonjs": "^16.0.0",
+        "@rollup/plugin-node-resolve": "^10.0.0",
+        "@types/lodash.debounce": "^4.0.6",
+        "@types/react": "^16.9.56",
+        "@types/react-window": "^1.8.2",
+        "@typescript-eslint/eslint-plugin": "^4.8.1",
+        "@typescript-eslint/parser": "^4.8.1",
+        "eslint": "^7.13.0",
+        "rollup": "^2.33.3",
+        "rollup-plugin-typescript2": "^0.29.0",
+        "sass": "^1.29.0",
+        "tslib": "^2.0.3",
+        "typescript": "^4.0.5"
+    },
+    "dependencies": {
+        "lodash.debounce": "^4.0.8",
+        "react-tether": "^2.0.7",
+        "react-window": "^1.8.6"
+    },
+    "peerDependencies": {
+        "react": "^17.0.1",
+        "react-dom": "^17.0.1"
+    },
+    "scripts": {
+        "lint": "yarn eslint \"**/*.ts\" --fix",
+        "build:ts": "rollup -c",
+        "build:scss": "sass lib/select.scss dist/select.css",
+        "build": "yarn lint && yarn build:ts && yarn build:scss",
+        "watch:ts": "rollup -c -w",
+        "watch:scss": "yarn build:scss --watch"
+    }
+}

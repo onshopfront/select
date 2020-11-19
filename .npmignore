@@ -1,0 +1,6 @@
+tsconfig.json
+rollup.config.js
+.eslintrc
+.eslintignore
+lib/
+.github/
