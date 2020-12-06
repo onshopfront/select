@@ -16,6 +16,7 @@
         "@typescript-eslint/eslint-plugin": "^4.8.1",
         "@typescript-eslint/parser": "^4.8.1",
         "eslint": "^7.13.0",
+        "react-refresh": "^0.9.0",
         "rollup": "^2.33.3",
         "rollup-plugin-typescript2": "^0.29.0",
         "sass": "^1.29.0",
@@ -24,6 +25,8 @@
     },
     "dependencies": {
         "lodash.debounce": "^4.0.8",
+        "react": "^17.0.1",
+        "react-dom": "^17.0.1",
         "react-tether": "^2.0.7",
         "react-window": "^1.8.6"
     },
