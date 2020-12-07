@@ -77,6 +77,7 @@ export interface SelectProps {
     onBlur?: (e: React.FocusEvent<HTMLInputElement>) => void;
     onEnter?: () => void;
     tabIndex?: number;
+    valuePadding?: string;
     iconRenderer?: React.ComponentType<{ icon: IconOption }>;
 }
 
@@ -776,7 +777,9 @@ export class Select extends React.Component<Props, State> {
 
         let valuePadding = "0.9em";
         if (this.props.isClearable && this.props.isMulti) {
-            valuePadding = `calc(1em + ${this.state.valueWidth}px)`;
+            if (Array.isArray(this.props.value) && this.props.value.length) {
+                valuePadding = `calc(${this.props.valuePadding || "1em"} + ${this.state.valueWidth}px)`;
+            }
         }
 
         const IconRenderer = typeof this.props.iconRenderer === "undefined" ?
