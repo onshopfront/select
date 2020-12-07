@@ -883,7 +883,11 @@ export class Select extends React.Component<Props, State> {
 
     public onSelectMenuReady = (): void => {
         if (this.tetherRef.current) {
-            this.tetherRef.current.position();
+            const instance = this.tetherRef.current.getTetherInstance();
+
+            if (instance) {
+                instance.position();
+            }
         }
     }
 
