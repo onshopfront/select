@@ -490,10 +490,8 @@ export class Select extends React.Component<Props, State> {
             this.props.onBlur(e);
         }
 
-        if (!e.target?.closest(".select-" + this.selectID)) {
-            this.blurTimeout = setTimeout(this.onClose, 250);
-        }
-    };
+        this.blurTimeout = setTimeout(this.onClose, 250);
+    }
 
     public onWindowMouseDown = (e: MouseEvent): void => {
         if (!(e.target instanceof Element)) {
