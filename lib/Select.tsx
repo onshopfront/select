@@ -79,6 +79,7 @@ export interface SelectProps {
     tabIndex?: number;
     valuePadding?: string;
     iconRenderer?: React.ComponentType<{ icon: IconOption }>;
+    menuHeight?: number;
 }
 
 type Props = SelectProps;
@@ -957,6 +958,7 @@ export class Select extends React.Component<Props, State> {
                                         SelectIcon :
                                         this.props.iconRenderer
                                 }
+                                height={this.props.menuHeight}
                             />
                         </div>
                     )}
