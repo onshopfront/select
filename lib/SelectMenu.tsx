@@ -21,6 +21,7 @@ type Props = {
     selected: SelectValueType;
     loading: boolean;
     isMulti: boolean;
+    input: string;
     onOpen: () => void;
     selectedLength: number;
     renderLabel?: (option: OptionType, selected: boolean, group: boolean) => React.ReactNode;
@@ -264,6 +265,8 @@ export default class SelectMenu extends React.PureComponent<Props, State> {
             }
         }
 
+        const canCreate = (this.props.input.trim() && this.props.isCreatable);
+
         return (
             <div
                 ref={(ref): void => {
@@ -277,7 +280,7 @@ export default class SelectMenu extends React.PureComponent<Props, State> {
                 }}
                 className="select-menu"
             >
-                {(!this.props.isCreatable && !optionCount && !this.props.loading) && (
+                {(!canCreate && !optionCount && !this.props.loading) && (
                     <div className={"select-no-results" + (noOptionsWithSelected ? " last-selected" : "")}>
                         {this.props.noOptionsMessage}
                     </div>

@@ -771,7 +771,7 @@ export class Select extends React.Component<Props, State> {
             hasValue    = true;
         }
 
-        if (this.props.isSearchable && this.state.input && !this.props.isMulti) {
+        if (this.props.isSearchable && this.state.input) {
             hasValue = false;
         }
 
@@ -951,6 +951,7 @@ export class Select extends React.Component<Props, State> {
                                 isMulti={!!this.props.isMulti}
                                 selectedLength={this.state.selectedOptions.length}
                                 renderLabel={this.props.renderLabel}
+                                input={this.state.input}
                                 onOpen={this.onOpen}
                                 onReposition={this.onSelectMenuReady}
                                 iconRenderer={
