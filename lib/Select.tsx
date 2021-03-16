@@ -771,15 +771,15 @@ export class Select extends React.Component<Props, State> {
             hasValue    = true;
         }
 
-        if (this.props.isSearchable && this.state.input) {
-            hasValue = false;
-        }
-
+        // Check if the values should still be shown so they can be backspaced
         let valuePadding = "0.9em";
         if (this.props.isClearable && this.props.isMulti) {
             if (Array.isArray(this.props.value) && this.props.value.length) {
                 valuePadding = `calc(${this.props.valuePadding || "1em"} + ${this.state.valueWidth}px)`;
             }
+        } else if (this.props.isSearchable && this.state.input) {
+            // Don't display the values
+            hasValue = false;
         }
 
         const IconRenderer = typeof this.props.iconRenderer === "undefined" ?
