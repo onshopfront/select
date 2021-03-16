@@ -23,6 +23,7 @@ interface Props {
     lastSelected: boolean;
     iconRenderer: React.ComponentType<{ icon: IconOption }>;
     style: React.CSSProperties;
+    forwardedRef?: React.ForwardedRef<Element>;
 }
 
 interface State {
@@ -45,7 +46,7 @@ export function isSelectValue(value: OptionType): value is SelectOptionType {
     return !isGroupValue(value) && !isCreatableValue(value);
 }
 
-export default class SelectOption extends React.Component<Props, State> {
+export class SelectOption extends React.Component<Props, State> {
     public itemRef: React.RefObject<HTMLDivElement> = React.createRef();
 
     public state = {
@@ -62,6 +63,18 @@ export default class SelectOption extends React.Component<Props, State> {
         }
     }
 
+    protected registerRef = (ref: Element | null): void => {
+        (this.itemRef as any).current = ref;
+
+        if(typeof this.props.forwardedRef !== "undefined" && this.props.forwardedRef !== null) {
+            if(typeof this.props.forwardedRef === "function") {
+                this.props.forwardedRef(ref);
+            } else {
+                this.props.forwardedRef.current = ref;
+            }
+        }
+    }
+
     public renderGroup = (): React.ReactNode => {
         if (!isGroupValue(this.props.option)) {
             return null;
@@ -74,7 +87,7 @@ export default class SelectOption extends React.Component<Props, State> {
 
         return (
             <div
-                ref={this.itemRef}
+                ref={this.registerRef}
                 className="select-group"
                 style={this.props.style}
             >
@@ -145,6 +158,7 @@ export default class SelectOption extends React.Component<Props, State> {
 
         let multi = null;
         if (this.props.isMulti) {
+            classes.push("multi-option");
             const IconElement = this.props.iconRenderer;
 
             multi = (
@@ -165,7 +179,7 @@ export default class SelectOption extends React.Component<Props, State> {
 
         return (
             <div
-                ref={this.itemRef}
+                ref={this.registerRef}
                 className={classes.join(" ")}
                 style={{
                     ...this.props.style,
@@ -188,7 +202,7 @@ export default class SelectOption extends React.Component<Props, State> {
 
         return (
             <div
-                ref={this.itemRef}
+                ref={this.registerRef}
                 className={classes.join(" ")}
                 style={{
                     ...this.props.style,
@@ -208,6 +222,7 @@ export default class SelectOption extends React.Component<Props, State> {
                 <div
                     className="select-option-empty"
                     style={this.props.style}
+                    ref={this.registerRef}
                 />
             );
         }
@@ -223,3 +238,10 @@ export default class SelectOption extends React.Component<Props, State> {
         return this.renderOption();
     }
 }
+
+export default React.forwardRef<Element, Props>((props, ref) => (
+    <SelectOption
+        {...props}
+        forwardedRef={ref}
+    />
+));

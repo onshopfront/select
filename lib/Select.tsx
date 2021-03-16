@@ -79,6 +79,7 @@ export interface SelectProps {
     tabIndex?: number;
     valuePadding?: string;
     iconRenderer?: React.ComponentType<{ icon: IconOption }>;
+    menuHeight?: number;
 }
 
 type Props = SelectProps;
@@ -490,10 +491,8 @@ export class Select extends React.Component<Props, State> {
             this.props.onBlur(e);
         }
 
-        if (!e.target?.closest(".select-" + this.selectID)) {
-            this.blurTimeout = setTimeout(this.onClose, 250);
-        }
-    };
+        this.blurTimeout = setTimeout(this.onClose, 250);
+    }
 
     public onWindowMouseDown = (e: MouseEvent): void => {
         if (!(e.target instanceof Element)) {
@@ -959,6 +958,7 @@ export class Select extends React.Component<Props, State> {
                                         SelectIcon :
                                         this.props.iconRenderer
                                 }
+                                height={this.props.menuHeight}
                             />
                         </div>
                     )}

@@ -8,7 +8,8 @@ import {
 } from "./Select";
 import SelectOption, { isGroupValue, isSelectValue } from "./SelectOption";
 import { IconOption, SelectIcon } from "./SelectIcon";
-import { FixedSizeList, ListChildComponentProps } from "react-window";
+import { List, ListRowProps } from "react-virtualized/dist/commonjs/List";
+import { CellMeasurer, CellMeasurerCache } from "react-virtualized/dist/commonjs/CellMeasurer";
 
 type Props = {
     options: SelectOptionsType;
@@ -27,6 +28,8 @@ type Props = {
     renderLabel?: (option: OptionType, selected: boolean, group: boolean) => React.ReactNode;
     onReposition: () => void;
     iconRenderer: React.ComponentType<{ icon: IconOption }>;
+    getItemSize?: (index: number) => number;
+    height?: number;
 }
 
 type FlatOptionType = Array<number>;
@@ -89,6 +92,12 @@ function findSelectedAddress(
 
 export default class SelectMenu extends React.PureComponent<Props, State> {
     public menuRef: HTMLDivElement | null = null;
+    public listRef = React.createRef<List>();
+    protected cellCache = new CellMeasurerCache({
+        fixedWidth   : true,
+        minHeight    : 35,
+        defaultHeight: 35,
+    });
 
     constructor(props: Readonly<Props>) {
         super(props);
@@ -107,6 +116,7 @@ export default class SelectMenu extends React.PureComponent<Props, State> {
 
     public componentDidUpdate(prevProps: Readonly<Props>, prevState: Readonly<State>): void {
         if (prevProps.options !== this.props.options) {
+            this.cellCache.clearAll();
             this.setState({
                 flattened: flattenOptions(this.props.options),
             });
@@ -143,34 +153,22 @@ export default class SelectMenu extends React.PureComponent<Props, State> {
     };
 
     public scrollToIndex = (index: number): void => {
-        if (!this.state.refReady || !this.menuRef) {
+        if (!this.listRef.current) {
             return;
         }
 
-        // Location to scroll to
-        let to = index * 35;
-
-        // Get the bonding box
-        const { scrollTop, clientHeight } = this.menuRef;
-        if (to > scrollTop - 34 && to < scrollTop + clientHeight) {
-            return; // Already on screen
-        }
-
-        // Get the centre of the scroll box
-        const middle = scrollTop + clientHeight / 2;
-
-        if (to > middle) {
-            to -= (clientHeight - 35);
-        }
-
-        if (to < 0) {
-            to = 0;
-        }
-
-        this.menuRef.scrollTop = to;
+        this.listRef.current.scrollToRow(index);
     };
 
-    public renderItem = ({ index, style }: ListChildComponentProps): React.ReactElement | null => {
+    protected getItemSize = (index: number): number => {
+        if(typeof this.props.getItemSize === "function") {
+            return this.props.getItemSize(index);
+        }
+
+        return 35;
+    }
+
+    public renderItem = ({ index, style, key, parent, columnIndex }: ListRowProps): React.ReactElement | null => {
         let address = this.state.flattened[index] as Array<number>;
 
         let lastSelected = false;
@@ -224,22 +222,35 @@ export default class SelectMenu extends React.PureComponent<Props, State> {
         }
 
         return (
-            <SelectOption
-                key={index}
-                option={option}
-                address={address}
-                layer={addressSize}
-                highlighted={highlighted}
-                onChange={this.props.onChange}
-                onHighlight={this.props.onHighlight}
-                selected={this.props.selected}
-                createOptionMessage={this.props.createOptionMessage}
-                isMulti={this.props.isMulti}
-                renderLabel={this.props.renderLabel}
-                lastSelected={lastSelected}
-                style={style}
-                iconRenderer={this.props.iconRenderer}
-            />
+            <CellMeasurer
+                cache={this.cellCache}
+                rowIndex={index}
+                key={key}
+                parent={parent}
+                columnIndex={columnIndex}
+            >
+                {({ registerChild }) => (
+                    <SelectOption
+                        ref={registerChild}
+                        option={option as SelectGroupType}
+                        address={address}
+                        layer={addressSize}
+                        highlighted={highlighted}
+                        onChange={this.props.onChange}
+                        onHighlight={this.props.onHighlight}
+                        selected={this.props.selected}
+                        createOptionMessage={this.props.createOptionMessage}
+                        isMulti={this.props.isMulti}
+                        renderLabel={this.props.renderLabel}
+                        lastSelected={lastSelected}
+                        style={{
+                            ...style,
+                            width: "100%",
+                        }}
+                        iconRenderer={this.props.iconRenderer}
+                    />
+                )}
+            </CellMeasurer>
         );
     };
 
@@ -291,19 +302,28 @@ export default class SelectMenu extends React.PureComponent<Props, State> {
                     </div>
                 )}
                 {this.state.refReady && (
-                    <FixedSizeList
-                        itemSize={35}
-                        height={Math.min(35 * flattenedCount, 300)}
-                        itemCount={flattenedCount}
-                        onItemsRendered={this.props.onReposition}
-                        overscanCount={20}
-                        width="100%"
+                    <List
+                        height={this.props.height || Math.min(35 * flattenedCount, 300)}
+                        estimatedRowSize={35}
+                        rowCount={flattenedCount}
+                        rowHeight={this.cellCache.rowHeight}
+                        rowRenderer={this.renderItem}
+                        onRowsRendered={this.props.onReposition}
+                        overscanRowCount={20}
+                        width={1}
+                        deferredMeasurementCache={this.cellCache}
                         itemData={{
                             highlighted: this.props.highlighted,
                         }}
-                    >
-                        {this.renderItem}
-                    </FixedSizeList>
+                        containerStyle={{
+                            width   : "100%",
+                            maxWidth: "100%",
+                        }}
+                        style={{
+                            width: "100%",
+                        }}
+                        ref={this.listRef}
+                    />
                 )}
             </div>
         );
