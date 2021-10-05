@@ -490,8 +490,6 @@ export class Select extends React.Component<Props, State> {
         if (typeof this.props.onBlur === "function") {
             this.props.onBlur(e);
         }
-
-        this.blurTimeout = setTimeout(this.onClose, 250);
     }
 
     public onWindowMouseDown = (e: MouseEvent): void => {
