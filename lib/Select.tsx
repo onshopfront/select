@@ -97,7 +97,6 @@ type State = {
     valueWidth: number;
     maxValues: number;
     autoFocus: boolean;
-    scrollBarClicked: boolean;
 }
 
 function moveDirection(
@@ -229,19 +228,18 @@ export class Select extends React.Component<Props, State> {
         }
 
         this.state = {
-            firstLoad       : !options.length,
-            loading         : false,
-            open            : !!props.open,
-            input           : "",
-            highlighted     : [],
-            width           : 100,
-            valueWidth      : 0,
-            maxValues       : 4,
-            autoFocus       : !!props.autoFocus,
+            firstLoad  : !options.length,
+            loading    : false,
+            open       : !!props.open,
+            input      : "",
+            highlighted: [],
+            width      : 100,
+            valueWidth : 0,
+            maxValues  : 4,
+            autoFocus  : !!props.autoFocus,
             noOptionsMessage,
             selectedOptions,
             options,
-            scrollBarClicked: false,
         };
 
         this.searchDebounce = debounce(this.searchOptions.bind(this), 500);
@@ -493,10 +491,12 @@ export class Select extends React.Component<Props, State> {
             this.props.onBlur(e);
         }
 
-        if (!this.state.scrollBarClicked) {
+        if (
+            !e.target?.closest(`.select-${this.selectID}`) ||
+            !(e.relatedTarget as null | HTMLElement)?.closest(`.select-${this.selectID}`)
+        ) {
             this.blurTimeout = setTimeout(this.onClose, 250);
         }
-
     }
 
     public onWindowMouseDown = (e: MouseEvent): void => {
@@ -505,20 +505,6 @@ export class Select extends React.Component<Props, State> {
         }
 
         if (e.target?.closest(".select-" + this.selectID)) {
-            let scrollBar = false;
-            if (e.target.lastElementChild) {
-                const child = e.target.lastElementChild;
-                const element = child.getAttributeNode("class");
-
-                if (element) {
-                    scrollBar = element.nodeValue === "ReactVirtualized__Grid__innerScrollContainer";
-                }
-            }
-
-            this.setState({
-                scrollBarClicked: scrollBar,
-            });
-
             if (this.blurTimeout) {
                 clearTimeout(this.blurTimeout);
             }
@@ -599,7 +585,7 @@ export class Select extends React.Component<Props, State> {
                 }
 
                 this.setState(newState);
-                
+
                 this.searchDebounce("");
             }
 
@@ -649,10 +635,6 @@ export class Select extends React.Component<Props, State> {
 
             e.preventDefault();
         }
-
-        this.setState({
-            scrollBarClicked: false,
-        });
     };
 
     public onBackspace = (): void => {
