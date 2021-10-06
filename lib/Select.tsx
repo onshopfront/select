@@ -490,6 +490,13 @@ export class Select extends React.Component<Props, State> {
         if (typeof this.props.onBlur === "function") {
             this.props.onBlur(e);
         }
+
+        if (
+            !e.target?.closest(`.select-${this.selectID}`) ||
+            !(e.relatedTarget as null | HTMLElement)?.closest(`.select-${this.selectID}`)
+        ) {
+            this.blurTimeout = setTimeout(this.onClose, 250);
+        }
     }
 
     public onWindowMouseDown = (e: MouseEvent): void => {
@@ -578,7 +585,7 @@ export class Select extends React.Component<Props, State> {
                 }
 
                 this.setState(newState);
-                
+
                 this.searchDebounce("");
             }
 
