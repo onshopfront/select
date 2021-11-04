@@ -1,4 +1,4 @@
-name: Deploy @onshopfront/select to Github Packages
+name: Deploy @shopfront/select to NPM
 
 on:
   release:
@@ -25,15 +25,15 @@ jobs:
       - run: yarn --frozen-lockfile
       - run: yarn run build
 
-  publish-gpr:
+  publish-npm:
     needs: build
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - uses: actions/setup-node@v1
+      - uses: actions/setup-node@v2
         with:
           node-version: 12
-          registry-url: https://npm.pkg.github.com/
+          registry-url: https://registry.npmjs.org/
       - name: Get yarn cache directory path
         id: yarn-cache-dir-path
         run: echo "::set-output name=dir::$(yarn cache dir)"
@@ -48,4 +48,4 @@ jobs:
       - run: yarn run build
       - run: yarn publish --access public
         env:
-          NODE_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
+          NODE_AUTH_TOKEN: ${{secrets.NPM_AUTH_TOKEN}}
