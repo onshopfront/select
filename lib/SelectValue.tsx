@@ -1,29 +1,29 @@
 import React from "react";
-import { SelectOptionType, SelectValueType } from "./Select";
+import { DefaultValueType, SelectOptionType, SelectValueType } from "./Select";
 import { IconOption } from "./SelectIcon";
 
-type Props = {
+interface Props<TValue> {
     disabled: boolean;
     isMulti: boolean;
     open: boolean;
-    value: SelectValueType;
+    value: SelectValueType<TValue>;
     input: string;
     onRemove: (index: number) => void;
-    renderValue?: (option: SelectValueType, multi: boolean) => React.ReactNode;
+    renderValue?: (option: SelectValueType<TValue>, multi: boolean) => React.ReactNode;
     maxValues: number;
     isClearable: boolean;
     iconRenderer: React.ComponentType<{ icon: IconOption }>;
 }
 
-export function isMultiValue(value: SelectValueType): value is Array<SelectOptionType> {
+export function isMultiValue<TValue>(value: SelectValueType<TValue>): value is Array<SelectOptionType<TValue>> {
     return Array.isArray(value);
 }
 
-export function isSingleValue(value: SelectValueType): value is SelectOptionType {
+export function isSingleValue<TValue>(value: SelectValueType<TValue>): value is SelectOptionType<TValue> {
     return !Array.isArray(value) && !!value;
 }
 
-export default class SelectValue extends React.Component<Props> {
+export default class SelectValue<TValue = DefaultValueType> extends React.Component<Props<TValue>> {
     public onRemove = (index: number) => {
         return (): void => {
             if (!this.props.disabled && this.props.isClearable) {

@@ -11,21 +11,21 @@ import { IconOption, SelectIcon } from "./SelectIcon";
 import { List, ListRowProps } from "react-virtualized/dist/commonjs/List";
 import { CellMeasurer, CellMeasurerCache } from "react-virtualized/dist/commonjs/CellMeasurer";
 
-type Props = {
-    options: SelectOptionsType;
+interface Props<TValue> {
+    options: SelectOptionsType<TValue>;
     noOptionsMessage: string;
-    onChange: SelectChangeType;
+    onChange: SelectChangeType<TValue>;
     highlighted: Array<number>;
     onHighlight: (index: Array<number>) => void;
     isCreatable: boolean;
     createOptionMessage: () => string;
-    selected: SelectValueType;
+    selected: SelectValueType<TValue>;
     loading: boolean;
     isMulti: boolean;
     input: string;
     onOpen: () => void;
     selectedLength: number;
-    renderLabel?: (option: OptionType, selected: boolean, group: boolean) => React.ReactNode;
+    renderLabel?: (option: OptionType<TValue>, selected: boolean, group: boolean) => React.ReactNode;
     onReposition: () => void;
     iconRenderer: React.ComponentType<{ icon: IconOption }>;
     getItemSize?: (index: number) => number;
@@ -42,8 +42,8 @@ type State = {
 // The maximum number of non selected flattened values before the selected values become visible
 const MAX_HIDE_MULTI_VALUES = 10;
 
-function flattenOptions(
-    options: SelectOptionsType,
+function flattenOptions<TValue>(
+    options: SelectOptionsType<TValue>,
     index: Array<number> = [],
     results: Array<FlatOptionType> = []
 ): Array<FlatOptionType> {
@@ -63,9 +63,9 @@ function flattenOptions(
     return results;
 }
 
-function findSelectedAddress(
-    options: SelectOptionsType,
-    selected: SelectValueType
+function findSelectedAddress<TValue>(
+    options: SelectOptionsType<TValue>,
+    selected: SelectValueType<TValue>
 ): Array<number> | false {
     if (Array.isArray(selected)) {
         return false;
@@ -90,7 +90,7 @@ function findSelectedAddress(
     return false;
 }
 
-export default class SelectMenu extends React.PureComponent<Props, State> {
+export default class SelectMenu<TValue> extends React.PureComponent<Props<TValue>, State> {
     public menuRef: HTMLDivElement | null = null;
     public listRef = React.createRef<List>();
     protected cellCache = new CellMeasurerCache({
@@ -99,7 +99,7 @@ export default class SelectMenu extends React.PureComponent<Props, State> {
         defaultHeight: 35,
     });
 
-    constructor(props: Readonly<Props>) {
+    constructor(props: Readonly<Props<TValue>>) {
         super(props);
 
         this.state = {
@@ -114,7 +114,7 @@ export default class SelectMenu extends React.PureComponent<Props, State> {
         });
     }
 
-    public componentDidUpdate(prevProps: Readonly<Props>, prevState: Readonly<State>): void {
+    public componentDidUpdate(prevProps: Readonly<Props<TValue>>, prevState: Readonly<State>): void {
         if (prevProps.options !== this.props.options) {
             this.cellCache.clearAll();
             this.setState({
@@ -187,11 +187,11 @@ export default class SelectMenu extends React.PureComponent<Props, State> {
         const highlightSize = this.props.highlighted.length;
 
         let highlighted = highlightSize === addressSize;
-        let layer: SelectOptionsType = this.props.options;
-        let option: SelectGroupType | OptionType | null = null;
+        let layer: SelectOptionsType<TValue> = this.props.options;
+        let option: SelectGroupType<TValue> | OptionType<TValue> | null = null;
 
         for (let i = 0; i < addressSize; i++) {
-            const currentLayer: OptionType = layer[address[i]];
+            const currentLayer: OptionType<TValue> = layer[address[i]];
 
             // This will occur between option updates
             if (typeof currentLayer === "undefined") {
@@ -204,7 +204,7 @@ export default class SelectMenu extends React.PureComponent<Props, State> {
                     option = currentLayer;
                     layer = currentLayer.options;
                 } else {
-                    option = { label: "Invalid Dataset", value: "" };
+                    option = { label: "Invalid Dataset", value: "" as unknown as TValue };
                     highlighted = false;
                     break;
                 }
@@ -232,7 +232,7 @@ export default class SelectMenu extends React.PureComponent<Props, State> {
                 {({ registerChild }) => (
                     <SelectOption
                         ref={registerChild}
-                        option={option as SelectGroupType}
+                        option={option as SelectGroupType<TValue>}
                         address={address}
                         layer={addressSize}
                         highlighted={highlighted}
