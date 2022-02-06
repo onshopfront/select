@@ -812,6 +812,7 @@ export class Select extends React.Component<Props, State> {
                 {this.props.isSearchable ? (
                     <input
                         ref={this.inputRef}
+                        id={this.props.id}
                         className="select-input-focusable"
                         placeholder={placeholder}
                         value={this.state.input}
