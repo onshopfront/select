@@ -1,5 +1,6 @@
 import React from "react";
 import {
+    DefaultValueType,
     OptionType,
     SelectChangeType,
     SelectCreatableType,
@@ -9,16 +10,16 @@ import {
 } from "./Select";
 import { IconOption } from "./SelectIcon";
 
-interface Props {
-    option: OptionType;
+interface Props<TValue> {
+    option: OptionType<TValue>;
     address: Array<number>;
     layer: number;
-    onChange: SelectChangeType;
+    onChange: SelectChangeType<TValue>;
     highlighted: boolean;
     onHighlight: (index: Array<number>) => void;
-    selected: SelectValueType;
+    selected: SelectValueType<TValue>;
     isMulti: boolean;
-    renderLabel?: (option: OptionType, selected: boolean, group: boolean) => React.ReactNode;
+    renderLabel?: (option: OptionType<TValue>, selected: boolean, group: boolean) => React.ReactNode;
     createOptionMessage: () => React.ReactNode;
     lastSelected: boolean;
     iconRenderer: React.ComponentType<{ icon: IconOption }>;
@@ -30,7 +31,7 @@ interface State {
     isSelected: boolean;
 }
 
-export function isGroupValue(value: OptionType): value is SelectGroupType {
+export function isGroupValue<TValue>(value: OptionType<TValue>): value is SelectGroupType<TValue> {
     if ("options" in value) {
         return Array.isArray(value.options);
     }
@@ -38,15 +39,15 @@ export function isGroupValue(value: OptionType): value is SelectGroupType {
     return false;
 }
 
-export function isCreatableValue(value: OptionType): value is SelectCreatableType {
+export function isCreatableValue<TValue = DefaultValueType>(value: OptionType<TValue>): value is SelectCreatableType {
     return "creatable" in value;
 }
 
-export function isSelectValue(value: OptionType): value is SelectOptionType {
+export function isSelectValue<TValue = DefaultValueType>(value: OptionType<TValue>): value is SelectOptionType<TValue> {
     return !isGroupValue(value) && !isCreatableValue(value);
 }
 
-export class SelectOption extends React.Component<Props, State> {
+export class SelectOption<TValue = DefaultValueType> extends React.Component<Props<TValue>, State> {
     public itemRef: React.RefObject<HTMLDivElement> = React.createRef();
 
     public state = {
@@ -57,7 +58,7 @@ export class SelectOption extends React.Component<Props, State> {
         this.checkSelected();
     }
 
-    public componentDidUpdate(prevProps: Readonly<Props>): void {
+    public componentDidUpdate(prevProps: Readonly<Props<TValue>>): void {
         if (this.props.selected !== prevProps.selected || this.props.option !== prevProps.option) {
             this.checkSelected();
         }
@@ -107,14 +108,16 @@ export class SelectOption extends React.Component<Props, State> {
         let isSelected = false;
 
         if (this.props.option) {
-            if (!Array.isArray((this.props.option as SelectGroupType).options)) {
+            if (!Array.isArray((this.props.option as SelectGroupType<TValue>).options)) {
                 if (this.props.selected) {
-                    const { value } = this.props.option as SelectOptionType;
+                    const { value } = this.props.option as SelectOptionType<TValue>;
 
                     if (Array.isArray(this.props.selected)) {
-                        isSelected = !!this.props.selected.find(option => (option as SelectOptionType).value === value);
+                        isSelected = !!this.props.selected.find(
+                            option => (option as SelectOptionType<TValue>).value === value
+                        );
                     } else {
-                        isSelected = (this.props.selected as SelectOptionType).value === value;
+                        isSelected = (this.props.selected as SelectOptionType<TValue>).value === value;
                     }
                 }
             }
@@ -239,7 +242,7 @@ export class SelectOption extends React.Component<Props, State> {
     }
 }
 
-export default React.forwardRef<Element, Props>((props, ref) => (
+export default React.forwardRef<Element, Props<any>>((props, ref) => (
     <SelectOption
         {...props}
         forwardedRef={ref}

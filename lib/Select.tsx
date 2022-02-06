@@ -8,7 +8,7 @@ import debounce from "lodash.debounce";
 import _ from "lodash";
 import TetherComponent from "react-tether";
 
-type DefaultValueType = string | number | boolean | undefined | null;
+export type DefaultValueType = string | number | boolean | undefined | null;
 
 export interface SelectOptionType<ValueType = DefaultValueType> {
     label: React.ReactNode;
@@ -20,41 +20,46 @@ export interface SelectCreatableType {
     creatable: true;
 }
 
-export interface SelectGroupType {
+export interface SelectGroupType<TValue> {
     label: React.ReactNode;
-    options: Array<OptionType>;
+    options: Array<OptionType<TValue>>;
 }
 
-export type OptionType = SelectCreatableType | SelectGroupType | SelectOptionType;
+export type OptionType<TValue = DefaultValueType> =
+    SelectCreatableType |
+    SelectGroupType<TValue> |
+    SelectOptionType<TValue>;
 
-export type SelectOptionsType = Array<OptionType>;
-export type SelectChangeType = (option: SelectCreatableType | SelectOptionType) => void;
+export type SelectOptionsType<TValue = DefaultValueType> = Array<OptionType<TValue>>;
+export type SelectChangeType<TValue> = (option: SelectCreatableType | SelectOptionType<TValue>) => void;
 
-export type SelectOptionsPropsType = SelectOptionsType | ((value: string) => Promise<SelectOptionsType>);
+export type SelectOptionsPropsType<TValue = DefaultValueType> =
+    SelectOptionsType<TValue> |
+    ((value: string) => Promise<SelectOptionsType<TValue>>);
 
 export type SelectValueType<ValueType = DefaultValueType> =
     null |
     SelectOptionType<ValueType>  |
     Array<SelectOptionType<ValueType>>;
 
-export type SelectRenderLabelType = (
-    option: OptionType,
+export type SelectRenderLabelType<TValue> = (
+    option: OptionType<TValue>,
     selected: boolean,
     group: boolean
 ) => React.ReactNode;
 
-export type SelectRenderValueType = (
-    option: SelectValueType,
+export type SelectRenderValueType<TValue> = (
+    option: SelectValueType<TValue>,
     multi: boolean
 ) => React.ReactNode;
 
-export interface SelectProps {
-    value: SelectValueType;
-    onChange: (value: SelectValueType) => void;
+export interface SelectProps<TValue = DefaultValueType> {
+    value: SelectValueType<TValue>;
+    onChange: (value: SelectValueType<TValue>) => void;
     className?: string;
     menuClassName?: string;
     open?: boolean;
-    options: SelectOptionsPropsType;
+    options: SelectOptionsPropsType<TValue>;
     placeholder?: string;
     id?: string;
     isClearable?: boolean;
@@ -70,9 +75,9 @@ export interface SelectProps {
     closeOnSelect?: boolean;
     defaultOptions?: boolean;
     disabled?: boolean;
-    onCreate?: (value: string) => Promise<string | SelectOptionType>;
-    renderLabel?: SelectRenderLabelType;
-    renderValue?: SelectRenderValueType;
+    onCreate?: (value: string) => Promise<string | SelectOptionType<TValue>>;
+    renderLabel?: SelectRenderLabelType<TValue>;
+    renderValue?: SelectRenderValueType<TValue>;
     onFocus?: (e: React.FocusEvent<HTMLInputElement>) => void;
     onBlur?: (e: React.FocusEvent<HTMLInputElement>) => void;
     onEnter?: () => void;
@@ -82,15 +87,13 @@ export interface SelectProps {
     menuHeight?: number;
 }
 
-type Props = SelectProps;
-
-type State = {
+interface State<TValue = DefaultValueType> {
     firstLoad: boolean;
     loading: boolean;
     open: boolean;
     input: string;
-    options: SelectOptionsType;
-    selectedOptions: SelectOptionsType;
+    options: SelectOptionsType<TValue>;
+    selectedOptions: SelectOptionsType<TValue>;
     noOptionsMessage: string;
     highlighted: Array<number>;
     width: number;
@@ -99,8 +102,8 @@ type State = {
     autoFocus: boolean;
 }
 
-function moveDirection(
-    layer: SelectOptionsPropsType,
+function moveDirection<TValue>(
+    layer: SelectOptionsPropsType<TValue>,
     current: Array<number>,
     direction: number
 ): Array<number> {
@@ -135,8 +138,8 @@ function moveDirection(
         const selected = layer[selectIndex];
 
         // Check to see if the selected item is a group
-        if (Array.isArray((selected as SelectGroupType).options)) {
-            const childMove = moveDirection((selected as SelectGroupType).options, remaining, direction);
+        if (Array.isArray((selected as SelectGroupType<TValue>).options)) {
+            const childMove = moveDirection((selected as SelectGroupType<TValue>).options, remaining, direction);
 
             if (Array.isArray(childMove)) {
                 return [ selectIndex, ...childMove ];
@@ -155,12 +158,15 @@ function moveDirection(
     return current;
 }
 
-function searchLayer(search: string, layer: SelectOptionsType): SelectOptionsType {
-    const results: SelectOptionsType = [];
+function searchLayer<TValue = DefaultValueType>(
+    search: string,
+    layer: SelectOptionsType<TValue>
+): SelectOptionsType<TValue> {
+    const results: SelectOptionsType<TValue> = [];
 
     for (let i = 0, l = layer.length; i < l; i++) {
-        if (Array.isArray((layer[i] as SelectGroupType).options)) {
-            const children = searchLayer(search, (layer[i] as SelectGroupType).options);
+        if (Array.isArray((layer[i] as SelectGroupType<TValue>).options)) {
+            const children = searchLayer(search, (layer[i] as SelectGroupType<TValue>).options);
 
             if (children.length) {
                 results.push({
@@ -169,7 +175,7 @@ function searchLayer(search: string, layer: SelectOptionsType): SelectOptionsTyp
                 });
             }
         } else {
-            const label = (layer[i] as SelectOptionType).label;
+            const label = (layer[i] as SelectOptionType<TValue>).label;
 
             if (typeof label === "string") {
                 if (label.toLowerCase().includes(search)) {
@@ -182,7 +188,7 @@ function searchLayer(search: string, layer: SelectOptionsType): SelectOptionsTyp
     return results;
 }
 
-export class Select extends React.Component<Props, State> {
+export class Select<TValue = DefaultValueType> extends React.Component<SelectProps<TValue>, State<TValue>> {
     public static defaultProps = {
         isClearable        : false,
         isCreatable        : false,
@@ -199,12 +205,12 @@ export class Select extends React.Component<Props, State> {
     public selectRef: React.RefObject<any> = React.createRef();
     public tetherRef: React.RefObject<TetherComponent> = React.createRef();
 
-    public loadingPromise?: CancellablePromise<SelectOptionsType>;
+    public loadingPromise?: CancellablePromise<SelectOptionsType<TValue>>;
 
     public searchDebounce: _.DebouncedFunc<any>;
     public resizeDebounce: _.DebouncedFunc<any>;
 
-    constructor(props: Readonly<Props>) {
+    constructor(props: Readonly<SelectProps<TValue>>) {
         super(props);
 
         let noOptionsMessage = "No Options";
@@ -240,7 +246,7 @@ export class Select extends React.Component<Props, State> {
             noOptionsMessage,
             selectedOptions,
             options,
-        };
+        } as State<TValue>;
 
         this.searchDebounce = debounce(this.searchOptions.bind(this), 500);
         this.resizeDebounce = debounce(this.calculateFullWidth.bind(this), 50);
@@ -259,7 +265,10 @@ export class Select extends React.Component<Props, State> {
         this.calculateValueWidth();
     }
 
-    public componentDidUpdate(prevProps: Readonly<Props>, prevState: Readonly<State>): void {
+    public componentDidUpdate(
+        prevProps: Readonly<SelectProps<TValue>>,
+        prevState: Readonly<State<TValue>>
+    ): void {
         if (
             typeof prevProps.options !== "function" ||
             typeof this.props.options !== "function"
@@ -273,7 +282,7 @@ export class Select extends React.Component<Props, State> {
             if (this.props.isMulti) {
                 const oldCount = prevState.selectedOptions.length;
 
-                let newValues: Array<SelectOptionType> = [];
+                let newValues: Array<SelectOptionType<TValue>> = [];
                 if (Array.isArray(this.props.value)) {
                     newValues = this.props.value;
                 }
@@ -401,7 +410,7 @@ export class Select extends React.Component<Props, State> {
             });
     };
 
-    public searchLocally = async (search: string): Promise<SelectOptionsType> => {
+    public searchLocally = async (search: string): Promise<SelectOptionsType<TValue>> => {
         const needle = search.trim().toLowerCase();
 
         if (typeof this.props.options === "function") {
@@ -491,7 +500,12 @@ export class Select extends React.Component<Props, State> {
             this.props.onBlur(e);
         }
 
-        this.blurTimeout = setTimeout(this.onClose, 250);
+        if (
+            !e.target?.closest(`.select-${this.selectID}`) ||
+            !(e.relatedTarget as null | HTMLElement)?.closest(`.select-${this.selectID}`)
+        ) {
+            this.blurTimeout = setTimeout(this.onClose, 250);
+        }
     }
 
     public onWindowMouseDown = (e: MouseEvent): void => {
@@ -518,18 +532,18 @@ export class Select extends React.Component<Props, State> {
         }
     };
 
-    public onSelect = async (option: OptionType): Promise<void> => {
+    public onSelect = async (option: OptionType<TValue>): Promise<void> => {
         if (this.props.disabled) {
             return;
         }
 
         if (isCreatableValue(option) && typeof this.props.onCreate === "function") {
-            const createdValue = (await this.props.onCreate(this.state.input)) as string | SelectOptionType;
+            const createdValue = (await this.props.onCreate(this.state.input)) as string | SelectOptionType<TValue>;
 
             if (typeof createdValue === "string") {
                 option = {
                     label: this.state.input,
-                    value: createdValue,
+                    value: createdValue as unknown as TValue,
                 };
             } else {
                 option = createdValue;
@@ -546,7 +560,7 @@ export class Select extends React.Component<Props, State> {
                     const oldValues = this.props.value;
 
                     for (let i = 0, l = oldValues.length; i < l; i++) {
-                        if (oldValues[i].value !== (option as SelectOptionType).value) {
+                        if (oldValues[i].value !== (option).value) {
                             value.push(clone(oldValues[i]));
                         } else {
                             found = true;
@@ -580,7 +594,7 @@ export class Select extends React.Component<Props, State> {
                 }
 
                 this.setState(newState);
-                
+
                 this.searchDebounce("");
             }
 
@@ -795,7 +809,7 @@ export class Select extends React.Component<Props, State> {
                     className="select-value-wrapper"
                 >
                     {hasValue && (
-                        <SelectValue
+                        <SelectValue<TValue>
                             disabled={!!this.props.disabled}
                             isMulti={!!this.props.isMulti}
                             isClearable={!!this.props.isClearable}
@@ -938,7 +952,7 @@ export class Select extends React.Component<Props, State> {
                                 width: `${this.state.width - 2}px`,
                             }}
                         >
-                            <SelectMenu
+                            <SelectMenu<TValue>
                                 options={this.state.options}
                                 noOptionsMessage={this.state.noOptionsMessage}
                                 onChange={this.onSelect}
@@ -1058,6 +1072,25 @@ const rn = () => {
         <Select
             value={null}
             options={[]}
+            onChange={onChange}
+            iconRenderer={FnCorrectProps}
+        />
+    );
+
+    const g = (
+        <Select
+            value={{
+                label: "Something",
+                value: {
+                    test: true,
+                },
+            }}
+            options={[{
+                label: "Something else",
+                value: {
+                    test: false,
+                },
+            }]}
             onChange={onChange}
             iconRenderer={FnCorrectProps}
         />
