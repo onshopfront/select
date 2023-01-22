@@ -10,6 +10,8 @@ import SelectOption, { isGroupValue, isSelectValue } from "./SelectOption";
 import { IconOption, SelectIcon } from "./SelectIcon";
 import { List, ListRowProps } from "react-virtualized/dist/commonjs/List";
 import { CellMeasurer, CellMeasurerCache } from "react-virtualized/dist/commonjs/CellMeasurer";
+import _ from "lodash";
+import debounce from "lodash.debounce";
 
 interface Props<TValue> {
     options: SelectOptionsType<TValue>;
@@ -37,10 +39,14 @@ type FlatOptionType = Array<number>;
 type State = {
     refReady: boolean;
     flattened: Array<FlatOptionType>;
+    minHeight: number;
 }
 
 // The maximum number of non selected flattened values before the selected values become visible
 const MAX_HIDE_MULTI_VALUES = 10;
+
+// The options are assumed to be 35px in height
+const DEFAULT_OPTION_HEIGHT = 35;
 
 function flattenOptions<TValue>(
     options: SelectOptionsType<TValue>,
@@ -95,17 +101,24 @@ export default class SelectMenu<TValue> extends React.PureComponent<Props<TValue
     public listRef = React.createRef<List>();
     protected cellCache = new CellMeasurerCache({
         fixedWidth   : true,
-        minHeight    : 35,
-        defaultHeight: 35,
+        minHeight    : DEFAULT_OPTION_HEIGHT,
+        defaultHeight: DEFAULT_OPTION_HEIGHT,
     });
+
+    protected heightDebounce: _.DebouncedFunc<() => void>;
 
     constructor(props: Readonly<Props<TValue>>) {
         super(props);
 
+        const flattened = flattenOptions(props.options);
+
         this.state = {
             refReady : false,
-            flattened: flattenOptions(props.options),
+            minHeight: Math.min(DEFAULT_OPTION_HEIGHT * flattened.length, 300),
+            flattened,
         };
+
+        this.heightDebounce = debounce(this.calculateMinHeight.bind(this), 50);
     }
 
     public componentDidMount(): void {
@@ -117,8 +130,11 @@ export default class SelectMenu<TValue> extends React.PureComponent<Props<TValue
     public componentDidUpdate(prevProps: Readonly<Props<TValue>>, prevState: Readonly<State>): void {
         if (prevProps.options !== this.props.options) {
             this.cellCache.clearAll();
+            const flattened = flattenOptions(this.props.options);
+
             this.setState({
-                flattened: flattenOptions(this.props.options),
+                minHeight: Math.min(DEFAULT_OPTION_HEIGHT * flattened.length, 300),
+                flattened,
             });
         }
 
@@ -165,8 +181,36 @@ export default class SelectMenu<TValue> extends React.PureComponent<Props<TValue
             return this.props.getItemSize(index);
         }
 
-        return 35;
+        return DEFAULT_OPTION_HEIGHT;
     }
+
+    protected calculateMinHeight = (): void => {
+        if (this.state.flattened.length > 10) {
+            return;
+        }
+
+        // Calculate the heights for small number of rows
+        let height = 0;
+        for (let i = 0, l = this.state.flattened.length; i < l; i++) {
+            height += this.cellCache.rowHeight({
+                index: i
+            });
+        }
+
+        this.setState({
+            minHeight: height,
+        });
+    };
+
+    protected onRowRendered = (): void => {
+        this.props.onReposition();
+
+        if (this.state.flattened.length > 10) {
+            return;
+        }
+
+        this.calculateMinHeight();
+    };
 
     public renderItem = ({ index, style, key, parent, columnIndex }: ListRowProps): React.ReactElement | null => {
         let address = this.state.flattened[index] as Array<number>;
@@ -278,6 +322,11 @@ export default class SelectMenu<TValue> extends React.PureComponent<Props<TValue
 
         const canCreate = (this.props.input.trim() && this.props.isCreatable);
 
+        let height = this.props.height;
+        if (typeof height !== "number") {
+            height = this.state.minHeight;
+        }
+
         return (
             <div
                 ref={(ref): void => {
@@ -303,12 +352,12 @@ export default class SelectMenu<TValue> extends React.PureComponent<Props<TValue
                 )}
                 {this.state.refReady && (
                     <List
-                        height={this.props.height || Math.min(35 * flattenedCount, 300)}
-                        estimatedRowSize={35}
+                        height={height}
+                        estimatedRowSize={DEFAULT_OPTION_HEIGHT}
                         rowCount={flattenedCount}
                         rowHeight={this.cellCache.rowHeight}
                         rowRenderer={this.renderItem}
-                        onRowsRendered={this.props.onReposition}
+                        onRowsRendered={this.onRowRendered}
                         overscanRowCount={20}
                         width={1}
                         deferredMeasurementCache={this.cellCache}
