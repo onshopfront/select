@@ -81,9 +81,12 @@ export class SelectOption<TValue = DefaultValueType> extends React.Component<Pro
             return null;
         }
 
+        let title: undefined | string;
         let { label } = this.props.option;
         if (typeof this.props.renderLabel === "function") {
             label = this.props.renderLabel(this.props.option, false, true);
+        } else if (typeof label === "string") {
+            title = label;
         }
 
         return (
@@ -97,6 +100,7 @@ export class SelectOption<TValue = DefaultValueType> extends React.Component<Pro
                     style={{
                         paddingLeft: `${0.5 * this.props.layer}rem`,
                     }}
+                    title={title}
                 >
                     {label}
                 </div>
@@ -173,10 +177,15 @@ export class SelectOption<TValue = DefaultValueType> extends React.Component<Pro
             );
         }
 
+        let title: undefined | string;
         let { label } = this.props.option;
         if (typeof this.props.renderLabel === "function") {
             label = this.props.renderLabel(this.props.option, this.state.isSelected, false);
         } else {
+            if (typeof label === "string") {
+                title = label;
+            }
+
             label = <React.Fragment>{multi} {label}</React.Fragment>;
         }
 
@@ -190,6 +199,7 @@ export class SelectOption<TValue = DefaultValueType> extends React.Component<Pro
                 }}
                 onClick={this.onClick}
                 onMouseEnter={this.onHover}
+                title={title}
             >
                 {label}
             </div>

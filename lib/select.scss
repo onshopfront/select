@@ -188,6 +188,9 @@ $tiny-padding: 0.25rem;
             width: 100%;
             padding: 0.5em 1em;
             box-sizing: border-box;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
 
             &.selected {
                 color: var(--select-option-selected-text-color, $dark-color);
@@ -209,6 +212,9 @@ $tiny-padding: 0.25rem;
                 padding: 0.5em;
                 box-sizing: border-box;
                 font-variant: all-small-caps;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
             }
         }
 
