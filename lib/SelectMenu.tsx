@@ -132,8 +132,19 @@ export default class SelectMenu<TValue> extends React.PureComponent<Props<TValue
             this.cellCache.clearAll();
             const flattened = flattenOptions(this.props.options);
 
+            let flattenedCount = flattened.length;
+            if (this.props.isMulti) {
+                const removedCount = flattenedCount - this.props.selectedLength;
+
+                if (removedCount < MAX_HIDE_MULTI_VALUES) {
+                    if (removedCount > 0 || !this.props.selectedLength) {
+                        flattenedCount = removedCount;
+                    }
+                }
+            }
+
             this.setState({
-                minHeight: Math.min(DEFAULT_OPTION_HEIGHT * flattened.length, 300),
+                minHeight: Math.min(DEFAULT_OPTION_HEIGHT * flattenedCount, 300),
                 flattened,
             });
         }
@@ -185,15 +196,28 @@ export default class SelectMenu<TValue> extends React.PureComponent<Props<TValue
     }
 
     protected calculateMinHeight = (): void => {
-        if (this.state.flattened.length > 10) {
+        let flattenedCount = this.state.flattened.length;
+        let offsetSize = 0;
+        if (this.props.isMulti) {
+            const removedCount = flattenedCount - this.props.selectedLength;
+
+            if (removedCount < MAX_HIDE_MULTI_VALUES) {
+                if (removedCount > 0 || !this.props.selectedLength) {
+                    flattenedCount = removedCount;
+                    offsetSize = this.props.selectedLength;
+                }
+            }
+        }
+
+        if (flattenedCount > 10) {
             return;
         }
 
         // Calculate the heights for small number of rows
         let height = 0;
-        for (let i = 0, l = this.state.flattened.length; i < l; i++) {
+        for (let i = 0, l = flattenedCount; i < l; i++) {
             height += this.cellCache.rowHeight({
-                index: i
+                index: i + offsetSize,
             });
         }
 
@@ -262,6 +286,7 @@ export default class SelectMenu<TValue> extends React.PureComponent<Props<TValue
         }
 
         if (option === null) {
+            console.log("Not rendering", index);
             return null;
         }
 
