@@ -286,7 +286,6 @@ export default class SelectMenu<TValue> extends React.PureComponent<Props<TValue
         }
 
         if (option === null) {
-            console.log("Not rendering", index);
             return null;
         }
 
