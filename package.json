@@ -1,6 +1,6 @@
 {
     "name": "@shopfront/select",
-    "version": "1.1.5",
+    "version": "1.1.6",
     "description": "An opinionated select component for React",
     "repository": "git@github.com:onshopfront/select.git",
     "author": "Shopfront <api@shopfront.com.au>",
